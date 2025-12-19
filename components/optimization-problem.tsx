@@ -14,7 +14,7 @@ import { nlp } from "@/core/problems/nlp-1";
 import { Iteration } from "@/core/types";
 import { range } from "d3-array";
 import { scaleLinear } from "d3-scale";
-import { line } from "d3-shape";
+import { area, line } from "d3-shape";
 import { useState } from "react";
 
 const Chart = (props: {
@@ -45,6 +45,11 @@ const Chart = (props: {
     .x((d) => xScale(d.x1))
     .y((d) => yScale(d.x2));
 
+  const areaPath = area<{ x1: number; x2: number }>()
+    .x((d) => xScale(d.x1))
+    .y0(() => yScale(0))
+    .y1((d) => yScale(d.x2));
+
   const linePathIter = line<Iteration["x"]>()
     .x((d) => xScale(d.get(0, 0)))
     .y((d) => yScale(d.get(1, 0)));
@@ -68,6 +73,12 @@ const Chart = (props: {
         handleNewInitialGuess(new Matrix(2, 1, [x1, x2]));
       }}
     >
+      <defs>
+        <linearGradient id="whiteToTransparent" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="white" stopOpacity="1" />
+          <stop offset="90%" stopColor="black" stopOpacity="1" />
+        </linearGradient>
+      </defs>
       <ContourLines xScale={xScale} yScale={yScale} fun={nlp.objective} />
       <path
         d={linePath(equalityConstraint) ?? ""}
@@ -115,6 +126,19 @@ const Chart = (props: {
           />
         </g>
       ))}
+      <rect
+        width={width}
+        height={height}
+        className="fill-amber-500/70"
+        mask="url(#constraint)"
+      />
+
+      <mask id="constraint">
+        <path
+          d={areaPath(inEqualityConstraint) ?? ""}
+          fill="url(#whiteToTransparent)"
+        />
+      </mask>
     </svg>
   );
 };
