@@ -76,8 +76,7 @@ export const optimalityError = (
     );
 
     return (
-      Math.hypot(primalInfeasibility, dualInfeasibility, complementary) <=
-      epsilon
+      Math.max(primalInfeasibility, dualInfeasibility, complementary) <= epsilon
     );
   };
 };

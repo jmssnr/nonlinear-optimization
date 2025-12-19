@@ -79,7 +79,7 @@ const Chart = (props: {
       />
       <path
         d={linePathIter(iterations.map((it) => it.x)) ?? ""}
-        className="fill-none stroke-pink-600 stroke-1 opacity-20"
+        className="fill-none stroke-pink-600 stroke-1 opacity-40"
       />
       {hover && (
         <g>
