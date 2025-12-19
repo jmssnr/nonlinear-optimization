@@ -12,7 +12,7 @@ export default function Home() {
   const { iterations } = useAnimate(solver, nlp, {});
 
   return (
-    <main className="flex h-screen w-screen bg-gray-900 text-gray-100">
+    <main className="flex h-dvh w-dvw bg-gray-900 text-gray-100">
       <aside className="hidden h-full w-3xs border-r border-gray-700 sm:block lg:w-xl">
         <IterationLogTable iterations={iterations} />
       </aside>
