@@ -27,7 +27,7 @@ export default function Home() {
             data={iterations.map((iteration) => iteration.primalInfeasibility)}
           />
           <DualFeasibility
-            data={iterations.map((iteration) => iteration.primalInfeasibility)}
+            data={iterations.map((iteration) => iteration.dualInfeasibility)}
           />
         </div>
       </section>
