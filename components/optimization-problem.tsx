@@ -1,3 +1,5 @@
+"use client";
+
 import ContourLines from "@/components/chart/contour-lines";
 import ResponsiveContainer from "@/components/chart/responsive-container";
 import {
@@ -7,18 +9,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Matrix } from "@/core/linear-algebra/matrix";
 import { nlp } from "@/core/problems/nlp-1";
 import { Iteration } from "@/core/types";
 import { range } from "d3-array";
 import { scaleLinear } from "d3-scale";
 import { line } from "d3-shape";
+import { useState } from "react";
 
 const Chart = (props: {
   width: number;
   height: number;
   iterations: Iteration[];
+  handleNewInitialGuess: (x: Matrix) => void;
 }) => {
-  const { width, height, iterations } = props;
+  const [hover, setHover] = useState<null | { x: number; y: number }>(null);
+  const { width, height, iterations, handleNewInitialGuess } = props;
 
   const xScale = scaleLinear().domain([0, 3]).range([0, width]);
   const yScale = scaleLinear().domain([0, 3]).range([height, 0]);
@@ -44,13 +50,29 @@ const Chart = (props: {
     .y((d) => yScale(d.get(1, 0)));
 
   return (
-    <svg width={width} height={height}>
+    <svg
+      className="cursor-crosshair"
+      width={width}
+      height={height}
+      onPointerMove={(event) => {
+        const { left, top } = event.currentTarget.getBoundingClientRect();
+        setHover({ x: event.clientX - left, y: event.clientY - top });
+      }}
+      onPointerLeave={() => setHover(null)}
+      onPointerDown={(event) => {
+        const { left, top } = event.currentTarget.getBoundingClientRect();
+
+        const x1 = xScale.invert(event.clientX - left);
+        const x2 = yScale.invert(event.clientY - top);
+
+        handleNewInitialGuess(new Matrix(2, 1, [x1, x2]));
+      }}
+    >
       <ContourLines xScale={xScale} yScale={yScale} fun={nlp.objective} />
       <path
         d={linePath(equalityConstraint) ?? ""}
         className="fill-none stroke-violet-500 stroke-1"
       />
-
       <path
         d={linePath(inEqualityConstraint) ?? ""}
         className="fill-none stroke-amber-500 stroke-1"
@@ -59,6 +81,24 @@ const Chart = (props: {
         d={linePathIter(iterations.map((it) => it.x)) ?? ""}
         className="fill-none stroke-pink-600 stroke-1 opacity-20"
       />
+      {hover && (
+        <g>
+          <line
+            x1={hover.x}
+            x2={hover.x}
+            y1={0}
+            y2={height}
+            className="stroke-gray-600"
+          />
+          <line
+            y1={hover.y}
+            y2={hover.y}
+            x1={0}
+            x2={width}
+            className="stroke-gray-600"
+          />
+        </g>
+      )}
       {iterations.map((iteration, index) => (
         <g key={index}>
           <circle
@@ -79,7 +119,13 @@ const Chart = (props: {
   );
 };
 
-const OptimizationProblem = ({ iterations }: { iterations: Iteration[] }) => {
+const OptimizationProblem = ({
+  iterations,
+  handleNewInitialGuess,
+}: {
+  handleNewInitialGuess: (x: Matrix) => void;
+  iterations: Iteration[];
+}) => {
   return (
     <Card className="min-h-0 w-full min-w-0 flex-2">
       <CardHeader>
@@ -93,7 +139,12 @@ const OptimizationProblem = ({ iterations }: { iterations: Iteration[] }) => {
       <CardContent className="h-full min-h-0 w-full min-w-0">
         <ResponsiveContainer>
           {({ width, height }) => (
-            <Chart iterations={iterations} width={width} height={height} />
+            <Chart
+              handleNewInitialGuess={handleNewInitialGuess}
+              iterations={iterations}
+              width={width}
+              height={height}
+            />
           )}
         </ResponsiveContainer>
       </CardContent>
