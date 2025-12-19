@@ -37,7 +37,7 @@ export const feasibilityCheck = (
       gradObjective
         .subtract(Jg.transpose().multiply(yk))
         .subtract(Jh.transpose().multiply(zk)).data,
-    ),
+    ).map((x) => Math.abs(x)),
   );
 
   return { primalInfeasibility, dualInfeasibility };
